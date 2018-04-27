@@ -52,7 +52,7 @@ public class TestEventTimeWindow {
 					for (WordWithCount count : input) {
 						sb.append(count.toString()).append("\n");
 					}
-					sb.append("------" + id + "------->\n");
+					sb.append("------" + id + "-------->\n");
 					System.out.println(sb.toString());
 
 				}
