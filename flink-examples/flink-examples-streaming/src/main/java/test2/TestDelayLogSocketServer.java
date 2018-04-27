@@ -1,4 +1,4 @@
-package test1;
+package test2;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -13,14 +13,14 @@ import java.util.Scanner;
  */
 public class TestDelayLogSocketServer {
 
-    public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 
-        ServerSocket serverSocket = new ServerSocket(9000);
+		ServerSocket serverSocket = new ServerSocket(9000);
 
-        while (true) {
-            final Socket sock = serverSocket.accept();
+		while (true) {
+			final Socket sock = serverSocket.accept();
 
-            System.out.println("accept one client");
+			System.out.println("accept one client");
 
 			new Thread(new Runnable() {
 				@Override
@@ -41,7 +41,7 @@ public class TestDelayLogSocketServer {
 
 							final String line = "aa " + i++ + " " + (System.currentTimeMillis() - delay);
 
-							System.out.println(line + "  ,real: " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " delay:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(System.currentTimeMillis() - delay)));
+							System.out.println(line + "  ,real:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " delay:" + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(System.currentTimeMillis() - delay)));
 
 							outputStream.write((line + "\n").getBytes());
 
@@ -53,10 +53,10 @@ public class TestDelayLogSocketServer {
 					}
 				}
 			}).start();
-        }
+		}
 
 
-    }
+	}
 
 	private static int toInt(String s) {
 		try {
