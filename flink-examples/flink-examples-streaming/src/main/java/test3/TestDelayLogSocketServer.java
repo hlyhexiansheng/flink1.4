@@ -1,4 +1,4 @@
-package test2;
+package test3;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -11,7 +11,6 @@ import java.util.Scanner;
 /**
  * Created by noodles on 2018/3/30 22:19.
  */
-//演示
 public class TestDelayLogSocketServer {
 
 	public static void main(String[] args) throws IOException {
@@ -26,7 +25,7 @@ public class TestDelayLogSocketServer {
 			new Thread(new Runnable() {
 				@Override
 				public void run() {
-					System.out.println("run thread...");
+					System.out.println("run thread....");
 					try {
 						final OutputStream outputStream = sock.getOutputStream();
 

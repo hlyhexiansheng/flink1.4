@@ -1,4 +1,4 @@
-package test2;
+package test3;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -6,6 +6,7 @@ import org.apache.flink.api.common.functions.MapFunction;
 import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.streaming.api.TimeCharacteristic;
 import org.apache.flink.streaming.api.datastream.DataStream;
+import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.AssignerWithPeriodicWatermarks;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
@@ -13,12 +14,16 @@ import org.apache.flink.streaming.api.watermark.Watermark;
 import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.util.Collector;
+import org.apache.flink.util.OutputTag;
 
 import javax.annotation.Nullable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-//演示AssignerWithPeriodicWatermarks 和 BoundedOutOfOrdernessTimestampExtractor的区别...
+
+//演示如何获得延迟到的数据.
 public class TestEventTimeWindow {
+
+	private  static  OutputTag<WordWithCount> lateOutputTag = new OutputTag<WordWithCount>("late-data"){};
 
 	public static void main(String[] args) throws Exception {
 
@@ -35,17 +40,18 @@ public class TestEventTimeWindow {
 					final String[] split = value.split("\\s");
 					return new WordWithCount(split[0], Long.parseLong(split[1]), Long.parseLong(split[2]));
 				}
-			})
-			.assignTimestampsAndWatermarks(new LogTraceTimer())
+			}).assignTimestampsAndWatermarks(new LogTraceTimer())
 			.keyBy("word")
 			.timeWindow(Time.seconds(10))
+//			.allowedLateness(Time.seconds(100))
+			.sideOutputLateData(lateOutputTag)
 			.apply(new WindowFunction<WordWithCount, AggResult, Tuple, TimeWindow>() {
 				@Override
 				public void apply(Tuple tuple, TimeWindow window, Iterable<WordWithCount> input, Collector<AggResult> out) throws Exception {
 					final long start = window.getStart();
 					final long end = window.getEnd();
 
-					StringBuilder sb = new StringBuilder("\n<----------------------->\n");
+					StringBuilder sb = new StringBuilder("\n<------------------------>\n");
 					sb.append("triggerTime=").append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(System.currentTimeMillis()))).append("\n");
 					sb.append("startTime:").append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(start)));
 					sb.append(" endTime:").append(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(end))).append("\n");
@@ -53,11 +59,16 @@ public class TestEventTimeWindow {
 					for (WordWithCount count : input) {
 						sb.append(count.toString()).append("\n");
 					}
-					sb.append("<----------------------->\n");
+					sb.append("<------------------------>\n");
 					System.out.println(sb.toString());
 
 				}
 			});
+
+
+		final DataStream sideOutput = ((SingleOutputStreamOperator) windowCounts).getSideOutput(lateOutputTag);
+		sideOutput.print();
+
 
 		windowCounts.print().setParallelism(1);
 
